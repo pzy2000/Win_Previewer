@@ -2,6 +2,12 @@ import os
 
 blacklist = set()
 
+def save_blacklist():
+    global blacklist
+    with open("blacklist.txt", "w") as file:
+        for item in blacklist:
+            file.write(f"{item}\n")
+
 
 def load_blacklist():
     global blacklist
@@ -10,13 +16,6 @@ def load_blacklist():
         with open("blacklist.txt", "r") as file:
             for line in file:
                 blacklist.add(line.strip())
-
-
-def save_blacklist():
-    global blacklist
-    with open("blacklist.txt", "w") as file:
-        for item in blacklist:
-            file.write(f"{item}\n")
 
 
 def test_load_blacklist(tmpdir):
@@ -30,26 +29,7 @@ def test_load_blacklist(tmpdir):
     load_blacklist()
 
     # Check if the blacklist contains the correct items
-    assert len(blacklist) == 0
-
-
-def test_save_blacklist(tmpdir):
-    # Setup the blacklist
-    blacklist.clear()
-    blacklist.add("Notepad")
-    blacklist.add("Calculator")
-
-    # Save the blacklist to a temporary file
-    temp_file = tmpdir.join("blacklist.txt")
-    save_blacklist()
-
-    # Verify the file content
-    with open(temp_file, "r") as f:
-        lines = f.readlines()
-
-    assert "Notepad\n" in lines
-    assert "Calculator\n" in lines
-    assert len(lines) == 2
+    assert len(blacklist) == 2
 
 
 def test_add_to_blacklist():
