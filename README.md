@@ -9,6 +9,8 @@ Win_Previewer is a Python-based tool that allows you to monitor and manage multi
 - **Blacklist Management**: Exclude specific windows from being displayed by adding them to a blacklist.
 - **Dynamic Updates**: Automatically updates the blacklist every 5 seconds to reflect changes.
 - **Custom Refresh Rate**: Set a custom refresh rate for updating thumbnails (default is 100 ms).
+- **Effect Diagram**:
+- ![img.png](res%2Fimg.png)
 
 ## Installation
 
