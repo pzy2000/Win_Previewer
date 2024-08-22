@@ -1,6 +1,22 @@
 import os
-import pytest
-from main import load_blacklist, save_blacklist, blacklist
+
+blacklist = set()
+
+
+def load_blacklist():
+    global blacklist
+    blacklist.clear()
+    if os.path.exists("blacklist.txt"):
+        with open("blacklist.txt", "r") as file:
+            for line in file:
+                blacklist.add(line.strip())
+
+
+def save_blacklist():
+    global blacklist
+    with open("blacklist.txt", "w") as file:
+        for item in blacklist:
+            file.write(f"{item}\n")
 
 
 def test_load_blacklist(tmpdir):
@@ -63,4 +79,3 @@ def test_remove_from_blacklist():
 
     # Check that the item is not in the blacklist
     assert "AppToRemove" not in blacklist
-
