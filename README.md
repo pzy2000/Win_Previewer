@@ -1,5 +1,7 @@
 # Win_Previewer
 
+[中文](README_CN.md)
+
 Win_Previewer is a Python-based tool that allows you to monitor and manage multiple running Windows applications by displaying real-time thumbnails of active windows. This tool is designed for developers and power users who need to keep track of multiple applications simultaneously, with features such as blacklist management and window activation.
 
 ## Features

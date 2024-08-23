@@ -1,5 +1,7 @@
 # Win_Previewer
 
+[English](README.md)
+
 Win_Previewer 是一个基于 Python 的工具，可以通过显示活动窗口的实时缩略图来监控和管理多个正在运行的 Windows 应用程序。此工具适合需要同时跟踪多个应用程序的开发者和高级用户，具备黑名单管理和窗口激活等功能。
 
 ## 功能
