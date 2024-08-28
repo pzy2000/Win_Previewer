@@ -1,13 +1,21 @@
 import os
+import tkinter as tk
+from tkinter import (
+    BooleanVar,
+    Button,
+    Checkbutton,
+    Frame,
+    Label,
+    Toplevel,
+    simpledialog,
+)
 from tkinter.dialog import Dialog
 
+import numpy as np
+import win32con
 import win32gui
 import win32ui
-import win32con
 from PIL import Image, ImageTk
-import tkinter as tk
-from tkinter import Label, Frame, Checkbutton, BooleanVar, simpledialog, Toplevel, Button
-import numpy as np
 
 # Global blacklist variable
 blacklist = set()
@@ -50,10 +58,19 @@ def get_window_screenshot(hwnd):
         bmpstr = bmp.GetBitmapBits(True)
 
         # Ensure the bitmap data is valid
-        if len(bmpstr) != bmpinfo['bmWidth'] * bmpinfo['bmHeight'] * 4:  # 4 bytes per pixel (BGRX)
+        # 4 bytes per pixel (BGRX)
+        if len(bmpstr) != bmpinfo["bmWidth"] * bmpinfo["bmHeight"] * 4:
             raise ValueError("Not enough image data")
 
-        img = Image.frombuffer('RGB', (bmpinfo['bmWidth'], bmpinfo['bmHeight']), bmpstr, 'raw', 'BGRX', 0, 1)
+        img = Image.frombuffer(
+            "RGB",
+            (bmpinfo["bmWidth"], bmpinfo["bmHeight"]),
+            bmpstr,
+            "raw",
+            "BGRX",
+            0,
+            1,
+        )
 
         win32gui.ReleaseDC(hwnd, hwindc)
         memdc.DeleteDC()
@@ -124,7 +141,11 @@ def create_monitoring_window(refresh_rate):
 
     def enum_window_callback(hwnd, extra):
         window_text = win32gui.GetWindowText(hwnd)
-        if win32gui.IsWindowVisible(hwnd) and window_text != "" and window_text not in blacklist:
+        if (
+            win32gui.IsWindowVisible(hwnd)
+            and window_text != ""
+            and window_text not in blacklist
+        ):
             frame = Frame(root)
             frame.pack(side="top", fill="both", expand=True, padx=5, pady=5)
 
@@ -133,7 +154,9 @@ def create_monitoring_window(refresh_rate):
             thumbnail_label.pack(side="left")
 
             # Window name
-            name_label = Label(frame, text=preprocess_title(window_text), font=("Arial", 8))
+            name_label = Label(
+                frame, text=preprocess_title(window_text), font=("Arial", 8)
+            )
             name_label.pack(side="left")
 
             def on_thumbnail_click(event, hwnd=hwnd):
@@ -203,30 +226,37 @@ def create_monitoring_window(refresh_rate):
             try:
                 new_interval = float(interval_var.get())
                 if new_interval > 0:
-                    window_interval = int(new_interval * 1000)  # Convert to milliseconds
+                    # Convert to milliseconds
+                    window_interval = int(new_interval * 1000)
                     if window_interval < 500:
-                        _ = Dialog(None, {'title': 'File Modified',
-                                          'text':
-                                              'window_interval is set too small.\n '
-                                              'This Window may flash frequently!\n'
-                                              'window_interval 设置值过小。\n'
-                                              '此窗口可能会频繁闪烁！',
-                                          'bitmap': 'questhead',
-                                          'default': 0,
-                                          'strings': ('Ignore',
-                                                      )})
+                        _ = Dialog(
+                            None,
+                            {
+                                "title": "File Modified",
+                                "text": "window_interval is set too small.\n "
+                                "This Window may flash frequently!\n"
+                                "window_interval 设置值过小。\n"
+                                "此窗口可能会频繁闪烁！",
+                                "bitmap": "questhead",
+                                "default": 0,
+                                "strings": ("Ignore",),
+                            },
+                        )
             except ValueError:
                 print("Invalid interval value. Please enter an integer.")
 
         Button(interval_frame, text="设置", command=set_interval).pack(side="right")
         blacklist_window.protocol("WM_DELETE_WINDOW", on_close)
 
-    Button(root, text="Blacklist Management", command=manage_blacklist).pack(side="bottom", pady=10)
+    Button(root, text="Blacklist Management", command=manage_blacklist).pack(
+        side="bottom", pady=10
+    )
 
     win32gui.EnumWindows(enum_window_callback, None)
     update_thumbnails(root, frames, refresh_rate)
     update_blacklist_periodically(root, frames, refresh_rate)
-    root.after(5000, refresh_windows, root)  # Schedule the refresh_windows function
+    # Schedule the refresh_windows function
+    root.after(5000, refresh_windows, root)
     root.mainloop()
 
 
@@ -239,7 +269,7 @@ if __name__ == "__main__":
         "Enter Refresh Rate(ms):",
         minvalue=1,
         maxvalue=10000,
-        initialvalue=100
+        initialvalue=100,
     )
     root.destroy()  # Destroy the input dialog root window
 
