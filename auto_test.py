@@ -2,6 +2,7 @@ import os
 
 blacklist = set()
 
+
 def save_blacklist():
     global blacklist
     with open("blacklist.txt", "w") as file:
