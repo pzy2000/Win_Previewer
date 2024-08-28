@@ -1,2 +1,6 @@
 /task_manager_screenshot.bmp
 /pure_test.py
+/dist/
+/build/
+/.idea/
+/main.spec

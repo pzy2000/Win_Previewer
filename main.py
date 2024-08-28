@@ -101,7 +101,7 @@ def update_thumbnails(root, frames, refresh_rate):
 def create_monitoring_window(refresh_rate):
     global blacklist
     root = tk.Tk()
-    root.title("Application Thumbnail Master 应用缩略图大师")
+    root.title("Thumbnail Master 缩略图大师")
 
     frames = {}
 
@@ -116,6 +116,12 @@ def create_monitoring_window(refresh_rate):
             frame.destroy()
         frames.clear()
 
+    def preprocess_title(origin_title):
+        if len(origin_title) <= 28:
+            return origin_title
+        title = origin_title[:28]
+        return title
+
     def enum_window_callback(hwnd, extra):
         window_text = win32gui.GetWindowText(hwnd)
         if win32gui.IsWindowVisible(hwnd) and window_text != "" and window_text not in blacklist:
@@ -127,7 +133,7 @@ def create_monitoring_window(refresh_rate):
             thumbnail_label.pack(side="left")
 
             # Window name
-            name_label = Label(frame, text=window_text, font=("Arial", 8))
+            name_label = Label(frame, text=preprocess_title(window_text), font=("Arial", 8))
             name_label.pack(side="left")
 
             def on_thumbnail_click(event, hwnd=hwnd):
