@@ -6,7 +6,7 @@ import win32ui
 import win32con
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import Label, Frame, Checkbutton, BooleanVar, simpledialog, Toplevel, Button, dialog
+from tkinter import Label, Frame, Checkbutton, BooleanVar, simpledialog, Toplevel, Button
 import numpy as np
 
 # Global blacklist variable
