@@ -1,14 +1,17 @@
 import os
+from tkinter.dialog import Dialog
+
 import win32gui
 import win32ui
 import win32con
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import Label, Frame, Checkbutton, BooleanVar, simpledialog, Toplevel, Button
+from tkinter import Label, Frame, Checkbutton, BooleanVar, simpledialog, Toplevel, Button, dialog
 import numpy as np
 
 # Global blacklist variable
 blacklist = set()
+window_interval = 10000
 
 
 def load_blacklist():
@@ -45,6 +48,11 @@ def get_window_screenshot(hwnd):
 
         bmpinfo = bmp.GetInfo()
         bmpstr = bmp.GetBitmapBits(True)
+
+        # Ensure the bitmap data is valid
+        if len(bmpstr) != bmpinfo['bmWidth'] * bmpinfo['bmHeight'] * 4:  # 4 bytes per pixel (BGRX)
+            raise ValueError("Not enough image data")
+
         img = Image.frombuffer('RGB', (bmpinfo['bmWidth'], bmpinfo['bmHeight']), bmpstr, 'raw', 'BGRX', 0, 1)
 
         win32gui.ReleaseDC(hwnd, hwindc)
@@ -56,7 +64,7 @@ def get_window_screenshot(hwnd):
             return None
 
         return img
-    except win32gui.error as e:
+    except (win32gui.error, ValueError) as e:
         print(f"Error capturing window: {e}")
         return None
 
@@ -93,9 +101,15 @@ def update_thumbnails(root, frames, refresh_rate):
 def create_monitoring_window(refresh_rate):
     global blacklist
     root = tk.Tk()
-    root.title("Application Thumbnails")
+    root.title("Application Thumbnail Master 应用缩略图大师")
 
     frames = {}
+
+    def refresh_windows(root):
+        clear_frames()
+        win32gui.EnumWindows(enum_window_callback, None)
+        print("window_interval", window_interval)
+        root.after(window_interval, refresh_windows, root)
 
     def clear_frames():
         for frame in frames.values():
@@ -138,7 +152,7 @@ def create_monitoring_window(refresh_rate):
             frames[hwnd] = frame
 
     def manage_blacklist():
-        global blacklist
+        global blacklist, window_interval
         blacklist_window = Toplevel(root)
         blacklist_window.title("Blacklist Management")
         blacklist_window.geometry("300x400")
@@ -148,6 +162,7 @@ def create_monitoring_window(refresh_rate):
             clear_frames()
             win32gui.EnumWindows(enum_window_callback, None)
 
+        # Add existing blacklist management functionality
         for item in list(blacklist):
             var = BooleanVar(value=True)
 
@@ -167,7 +182,37 @@ def create_monitoring_window(refresh_rate):
 
             checkbox = Checkbutton(frame, variable=var, command=on_blacklist_toggle)
             checkbox.pack(side="right")
+        # Add interval setting elements
+        interval_frame = Frame(blacklist_window)
+        interval_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
+        Label(interval_frame, text="窗口获取间隔(秒)").pack(side="left")
+
+        interval_var = tk.StringVar(value=str(window_interval // 1000))
+        interval_entry = tk.Entry(interval_frame, textvariable=interval_var)
+        interval_entry.pack(side="left")
+
+        def set_interval():
+            global window_interval
+            try:
+                new_interval = float(interval_var.get())
+                if new_interval > 0:
+                    window_interval = int(new_interval * 1000)  # Convert to milliseconds
+                    if window_interval < 500:
+                        _ = Dialog(None, {'title': 'File Modified',
+                                          'text':
+                                              'window_interval is set too small.\n '
+                                              'This Window may flash frequently!\n'
+                                              'window_interval 设置值过小。\n'
+                                              '此窗口可能会频繁闪烁！',
+                                          'bitmap': 'questhead',
+                                          'default': 0,
+                                          'strings': ('Ignore',
+                                                      )})
+            except ValueError:
+                print("Invalid interval value. Please enter an integer.")
+
+        Button(interval_frame, text="设置", command=set_interval).pack(side="right")
         blacklist_window.protocol("WM_DELETE_WINDOW", on_close)
 
     Button(root, text="Blacklist Management", command=manage_blacklist).pack(side="bottom", pady=10)
@@ -175,7 +220,7 @@ def create_monitoring_window(refresh_rate):
     win32gui.EnumWindows(enum_window_callback, None)
     update_thumbnails(root, frames, refresh_rate)
     update_blacklist_periodically(root, frames, refresh_rate)
-
+    root.after(5000, refresh_windows, root)  # Schedule the refresh_windows function
     root.mainloop()
 
 
@@ -185,7 +230,7 @@ if __name__ == "__main__":
 
     refresh_rate = simpledialog.askinteger(
         "Refresh Rate",
-        "Enter refresh rate in ms:",
+        "Enter Refresh Rate(ms):",
         minvalue=1,
         maxvalue=10000,
         initialvalue=100
